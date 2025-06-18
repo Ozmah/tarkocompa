@@ -1,17 +1,9 @@
 import { useTarkovMaps } from "@/api/hooks/useTarkovMaps";
 import type { BossSpawn, TarkovMap } from "@/api/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EXCLUDED_BOSS_NAMES } from "@/lib/constants";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-	AlertCircle,
-	Clock,
-	ExternalLink,
-	Key,
-	Loader2,
-	MapPin,
-	Skull,
-	Users,
-} from "lucide-react";
+import { AlertCircle, Clock, ExternalLink, Key, Loader2, MapPin, Skull, Users } from "lucide-react";
 
 export const Route = createFileRoute("/maps")({
 	component: MapsComponent,
@@ -29,8 +21,8 @@ function MapsComponent() {
 						Mapas de Tarkov
 					</h1>
 					<p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
-						Información detallada de todos los mapas, incluyendo spawn rates de
-						jefes, extracciones y datos tácticos.
+						Información detallada de todos los mapas, incluyendo spawn rates de jefes, extracciones y datos
+						tácticos.
 					</p>
 				</div>
 			</section>
@@ -40,31 +32,25 @@ function MapsComponent() {
 				<section>
 					<div className="mb-6 flex items-center gap-3">
 						<MapPin className="h-6 w-6 text-primary" />
-						<h2 className="font-[family-name:var(--font-heading)] font-bold text-2xl">
-							Todos los Mapas
-						</h2>
+						<h2 className="font-[family-name:var(--font-heading)] font-bold text-2xl">Todos los Mapas</h2>
 					</div>
 
 					{isLoading && (
 						<div className="flex items-center justify-center py-16">
 							<Loader2 className="h-8 w-8 animate-spin text-primary" />
-							<span className="ml-2 text-muted-foreground">
-								Cargando mapas desde Tarkov.dev...
-							</span>
+							<span className="ml-2 text-muted-foreground">Cargando mapas desde Tarkov.dev...</span>
 						</div>
 					)}
 
 					{error && (
 						<div className="flex items-center justify-center py-16 text-destructive">
 							<AlertCircle className="h-6 w-6" />
-							<span className="ml-2">
-								Error al cargar mapas: {error.message}
-							</span>
+							<span className="ml-2">Error al cargar mapas: {error.message}</span>
 						</div>
 					)}
 
 					{maps && maps.length > 0 && (
-						<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+						<div className="grid gap-3 md:grid-cols-2 lg:gap-6 lg:grid-cols-3">
 							{maps.map((map) => (
 								<MapCard key={map.id} map={map} />
 							))}
@@ -72,9 +58,7 @@ function MapsComponent() {
 					)}
 
 					{maps && maps.length === 0 && !isLoading && (
-						<div className="py-16 text-center text-muted-foreground">
-							No se encontraron mapas
-						</div>
+						<div className="py-16 text-center text-muted-foreground">No se encontraron mapas</div>
 					)}
 				</section>
 			</main>
@@ -89,8 +73,10 @@ interface MapCardProps {
 
 function MapCard({ map }: MapCardProps) {
 	// Sort bosses by spawn chance (highest first)
-	const sortedBosses =
-		map.bosses?.sort((a, b) => b.spawnChance - a.spawnChance) || [];
+	const filteredBosses = map.bosses?.filter((bossSpawn: BossSpawn) => {
+		return !EXCLUDED_BOSS_NAMES.includes(bossSpawn.boss.normalizedName);
+	});
+	const sortedBosses = filteredBosses?.sort((a, b) => b.spawnChance - a.spawnChance) || [];
 
 	// Format duration
 	const formatDuration = (minutes?: number) => {
@@ -131,11 +117,7 @@ function MapCard({ map }: MapCardProps) {
 
 			<CardContent className="space-y-4 pt-6">
 				{/* Map Description */}
-				{map.description && (
-					<p className="line-clamp-2 text-muted-foreground text-sm">
-						{map.description}
-					</p>
-				)}
+				{map.description && <p className="line-clamp-2 text-muted-foreground text-sm">{map.description}</p>}
 
 				{/* Key Stats */}
 				<div className="grid grid-cols-2 gap-4">
@@ -156,9 +138,7 @@ function MapCard({ map }: MapCardProps) {
 							<Clock className="h-4 w-4 text-primary" />
 							<span className="text-sm">
 								<span className="text-muted-foreground">Duración:</span>
-								<span className="ml-1 font-semibold">
-									{formatDuration(map.raidDuration)}
-								</span>
+								<span className="ml-1 font-semibold">{formatDuration(map.raidDuration)}</span>
 							</span>
 						</div>
 					)}
@@ -180,9 +160,7 @@ function MapCard({ map }: MapCardProps) {
 							<MapPin className="h-4 w-4 text-primary" />
 							<span className="text-sm">
 								<span className="text-muted-foreground">Extracciones:</span>
-								<span className="ml-1 font-semibold">
-									{map.extracts.length}
-								</span>
+								<span className="ml-1 font-semibold">{map.extracts.length}</span>
 							</span>
 						</div>
 					)}
@@ -193,9 +171,7 @@ function MapCard({ map }: MapCardProps) {
 					<div className="rounded-lg border border-border bg-secondary/30 p-4">
 						<div className="mb-3 flex items-center gap-2">
 							<Skull className="h-4 w-4 text-destructive" />
-							<span className="font-semibold text-foreground">
-								Jefes ({sortedBosses.length})
-							</span>
+							<span className="font-semibold text-foreground">Jefes ({sortedBosses.length})</span>
 						</div>
 
 						<div className="space-y-3">
@@ -203,35 +179,31 @@ function MapCard({ map }: MapCardProps) {
 								<div
 									key={`${bossSpawn.boss.id}-${index}`}
 									className={`flex items-center justify-between ${
-										index !== sortedBosses.length - 1
-											? "border-border/50 border-b pb-3"
-											: ""
+										index !== sortedBosses.length - 1 ? "border-border/50 border-b pb-3" : ""
 									}`}
 								>
 									<div className="flex items-center gap-3">
-										{bossSpawn.boss.imagePortraitLink ? (
+										{bossSpawn.boss.imagePortraitLink ?
 											<img
 												src={bossSpawn.boss.imagePortraitLink}
 												alt={bossSpawn.boss.name}
 												className="h-8 w-8 rounded-full border border-border object-cover"
 												loading="lazy"
 											/>
-										) : (
-											<div className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-secondary">
+										:	<div className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-secondary">
 												<Skull className="h-4 w-4 text-destructive" />
 											</div>
-										)}
+										}
 										<div>
 											<div className="font-medium text-foreground text-sm">
 												{bossSpawn.boss.name}
 											</div>
-											{bossSpawn.spawnLocations &&
-												bossSpawn.spawnLocations.length > 0 && (
-													<div className="text-muted-foreground text-xs">
-														{bossSpawn.spawnLocations.length} ubicación
-														{bossSpawn.spawnLocations.length > 1 ? "es" : ""}
-													</div>
-												)}
+											{bossSpawn.spawnLocations && bossSpawn.spawnLocations.length > 0 && (
+												<div className="text-muted-foreground text-xs">
+													{bossSpawn.spawnLocations.length} ubicación
+													{bossSpawn.spawnLocations.length > 1 ? "es" : ""}
+												</div>
+											)}
 											{bossSpawn.escorts && bossSpawn.escorts.length > 0 && (
 												<div className="text-muted-foreground text-xs">
 													+{bossSpawn.escorts.length} escort
@@ -258,9 +230,7 @@ function MapCard({ map }: MapCardProps) {
 				{/* No Boss Info */}
 				{sortedBosses.length === 0 && (
 					<div className="rounded-lg border border-border bg-muted/20 p-4 text-center">
-						<div className="text-muted-foreground text-sm">
-							Sin jefes registrados
-						</div>
+						<div className="text-muted-foreground text-sm">Sin jefes registrados</div>
 					</div>
 				)}
 			</CardContent>

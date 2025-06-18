@@ -1,7 +1,5 @@
 import { GraphQLClient } from "graphql-request";
-
-// Tarkov.dev GraphQL API endpoint
-const TARKOV_API_ENDPOINT = "https://api.tarkov.dev/graphql";
+import { TARKOV_API_ENDPOINT, RATE_LIMIT_CONFIG } from "@/lib/constants";
 
 // Create GraphQL client with default configuration
 export const tarkovApiClient = new GraphQLClient(TARKOV_API_ENDPOINT, {
@@ -13,8 +11,8 @@ export const tarkovApiClient = new GraphQLClient(TARKOV_API_ENDPOINT, {
 // Rate limiting class following project guidelines
 class TarkovApiRateLimiter {
 	private tokens: number;
-	private readonly maxTokens: number = 100;
-	private readonly refillRate: number = 10; // tokens per second
+	private readonly maxTokens: number = RATE_LIMIT_CONFIG.MAX_TOKENS;
+	private readonly refillRate: number = RATE_LIMIT_CONFIG.REFILL_RATE;
 	private lastRefill: number = Date.now();
 
 	constructor() {
