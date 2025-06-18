@@ -2,13 +2,22 @@ import { Link } from "@tanstack/react-router";
 import {
 	Home,
 	MapPin,
+	Menu,
 	Shield,
 	ShoppingCart,
 	Skull,
 	Target,
 } from "lucide-react";
 
-import { ModeToggle } from "./mode-toggle";
+import { ThemeSwitcher } from "./theme-switcher";
+import { Button } from "./ui/button";
+import {
+	Sheet,
+	SheetContent,
+	SheetHeader,
+	SheetTitle,
+	SheetTrigger,
+} from "./ui/sheet";
 
 export default function Header() {
 	const links = [
@@ -27,7 +36,7 @@ export default function Header() {
 					<div className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text font-[family-name:var(--font-heading)] font-bold text-2xl text-transparent">
 						TARKOMPA
 					</div>
-					<nav className="hidden gap-6 md:flex">
+					<nav className="hidden gap-6 lg:flex">
 						{links.map(({ to, label, icon: Icon }) => (
 							<Link
 								key={to}
@@ -40,7 +49,35 @@ export default function Header() {
 						))}
 					</nav>
 					<div className="flex items-center gap-2">
-						<ModeToggle />
+						{/* Mobile Menu */}
+						<Sheet>
+							<SheetTrigger asChild>
+								<Button variant="ghost" size="icon" className="lg:hidden">
+									<Menu className="h-5 w-5" />
+									<span className="sr-only">Abrir menú</span>
+								</Button>
+							</SheetTrigger>
+							<SheetContent side="right" className="w-[300px] sm:w-[400px]">
+								<SheetHeader>
+									<SheetTitle className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text font-[family-name:var(--font-heading)] font-bold text-transparent text-xl">
+										TARKOMPA
+									</SheetTitle>
+								</SheetHeader>
+								<nav className="mt-8 flex flex-col gap-4">
+									{links.map(({ to, label, icon: Icon }) => (
+										<Link
+											key={to}
+											to={to}
+											className="flex items-center gap-3 rounded-md px-3 py-3 font-medium text-foreground transition-all duration-200 hover:bg-muted [&.active]:bg-muted [&.active]:text-primary"
+										>
+											<Icon className="h-5 w-5" />
+											{label}
+										</Link>
+									))}
+								</nav>
+							</SheetContent>
+						</Sheet>
+						<ThemeSwitcher />
 					</div>
 				</div>
 			</div>
