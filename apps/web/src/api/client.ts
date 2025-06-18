@@ -1,5 +1,5 @@
+import { RATE_LIMIT_CONFIG, TARKOV_API_ENDPOINT } from "@/lib/constants";
 import { GraphQLClient } from "graphql-request";
-import { TARKOV_API_ENDPOINT, RATE_LIMIT_CONFIG } from "@/lib/constants";
 
 // Create GraphQL client with default configuration
 export const tarkovApiClient = new GraphQLClient(TARKOV_API_ENDPOINT, {
