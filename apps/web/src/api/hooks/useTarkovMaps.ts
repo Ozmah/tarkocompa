@@ -1,5 +1,5 @@
 import { type UseQueryOptions, useQuery } from "@tanstack/react-query";
-import { rateLimiter, tarkovApiClient } from "../client";
+import { tarkovApiClient } from "../client";
 import {
 	GET_MAPS,
 	GET_MAP_BY_ID,
@@ -29,47 +29,12 @@ export function useTarkovMaps(
 	return useQuery<TarkovMap[], TarkovApiError>({
 		queryKey: tarkovMapsKeys.list(variables),
 		queryFn: async (): Promise<TarkovMap[]> => {
-			// Check rate limit before making request
-			if (!rateLimiter.canMakeRequest()) {
-				const error: TarkovApiError = {
-					type: "rate_limit",
-					message:
-						"Rate limit exceeded. Please wait before making another request.",
-				};
-				throw error;
-			}
+			const response = await tarkovApiClient<MapsQueryResponse>(
+				GET_MAPS,
+				variables,
+			);
 
-			try {
-				const response = await tarkovApiClient.request<MapsQueryResponse>(
-					GET_MAPS,
-					variables,
-				);
-
-				return response.maps || [];
-			} catch (error) {
-				// Enhanced error handling
-				if (error instanceof Error) {
-					if (error.message.includes("fetch")) {
-						const apiError: TarkovApiError = {
-							type: "network",
-							message: "Network error: Unable to connect to Tarkov API",
-						};
-						throw apiError;
-					}
-
-					const apiError: TarkovApiError = {
-						type: "graphql",
-						message: error.message,
-					};
-					throw apiError;
-				}
-
-				const unknownError: TarkovApiError = {
-					type: "unknown",
-					message: "An unexpected error occurred while fetching maps",
-				};
-				throw unknownError;
-			}
+			return response.maps || [];
 		},
 		// Cache configuration for maps (static data changes less frequently)
 		staleTime: 30 * 60 * 1000, // 30 minutes - maps data changes infrequently
@@ -105,53 +70,20 @@ export function useTarkovMap(
 	return useQuery<TarkovMap, TarkovApiError>({
 		queryKey: tarkovMapsKeys.detail(variables.id),
 		queryFn: async (): Promise<TarkovMap> => {
-			if (!rateLimiter.canMakeRequest()) {
-				const error: TarkovApiError = {
-					type: "rate_limit",
-					message:
-						"Rate limit exceeded. Please wait before making another request.",
+			const response = await tarkovApiClient<{ map: TarkovMap }>(
+				GET_MAP_BY_ID,
+				variables,
+			);
+
+			if (!response.map) {
+				const notFoundError: TarkovApiError = {
+					type: "graphql",
+					message: `Map with ID ${variables.id} not found`,
 				};
-				throw error;
+				throw notFoundError;
 			}
 
-			try {
-				const response = await tarkovApiClient.request<{ map: TarkovMap }>(
-					GET_MAP_BY_ID,
-					variables,
-				);
-
-				if (!response.map) {
-					const notFoundError: TarkovApiError = {
-						type: "graphql",
-						message: `Map with ID ${variables.id} not found`,
-					};
-					throw notFoundError;
-				}
-
-				return response.map;
-			} catch (error) {
-				if (error instanceof Error) {
-					if (error.message.includes("fetch")) {
-						const apiError: TarkovApiError = {
-							type: "network",
-							message: "Network error: Unable to connect to Tarkov API",
-						};
-						throw apiError;
-					}
-
-					const apiError: TarkovApiError = {
-						type: "graphql",
-						message: error.message,
-					};
-					throw apiError;
-				}
-
-				const unknownError: TarkovApiError = {
-					type: "unknown",
-					message: "An unexpected error occurred while fetching map details",
-				};
-				throw unknownError;
-			}
+			return response.map;
 		},
 		// Longer cache for individual map details
 		staleTime: 60 * 60 * 1000, // 1 hour

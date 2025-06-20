@@ -1,8 +1,10 @@
 import { useTarkovTopAmmo } from "@/api/hooks/useTarkovAmmo";
 import type { TarkovAmmo } from "@/api/types";
+import { BossSpawnList } from "@/components/tarkov/BossSpawnList";
+import { HighValueItemsGrid } from "@/components/tarkov/HighValueItemsGrid";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createFileRoute } from "@tanstack/react-router";
-import { AlertCircle, Loader2, Target } from "lucide-react";
+import { AlertCircle, Loader2, Target, TrendingUp } from "lucide-react";
 
 export const Route = createFileRoute("/")({
 	component: DashboardComponent,
@@ -27,55 +29,79 @@ function DashboardComponent() {
 
 			{/* Main Content */}
 			<main className="mx-auto max-w-screen-2xl px-4 py-12 sm:px-6 lg:px-8">
-				<section>
-					<div className="mb-6 flex items-center gap-3">
-						<Target className="h-6 w-6 text-primary" />
-						<h2 className="font-[family-name:var(--font-heading)] font-bold text-2xl">
-							Municiones de Tarkov (API Real)
-						</h2>
+				<div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+					{/* Main Content Area */}
+					<div className="space-y-8 lg:col-span-3">
+						{/* High Value Items Section */}
+						<section>
+							<div className="mb-6 flex items-center gap-3">
+								<TrendingUp className="h-6 w-6 text-primary" />
+								<h2 className="font-[family-name:var(--font-heading)] font-bold text-2xl">
+									Items de Alto Valor
+								</h2>
+							</div>
+							<HighValueItemsGrid />
+						</section>
+
+						{/* Ammo Section */}
+						<section>
+							<div className="mb-6 flex items-center gap-3">
+								<Target className="h-6 w-6 text-primary" />
+								<h2 className="font-[family-name:var(--font-heading)] font-bold text-2xl">
+									Municiones de Tarkov
+								</h2>
+							</div>
+
+							<Card className="transition-all duration-300 hover:shadow-lg hover:shadow-primary/10">
+								<CardHeader className="border-border border-b">
+									<CardTitle className="font-[family-name:var(--font-heading)]">
+										Top 10 Municiones
+									</CardTitle>
+								</CardHeader>
+								<CardContent className="pt-6">
+									{isLoading && (
+										<div className="flex items-center justify-center py-8">
+											<Loader2 className="h-8 w-8 animate-spin text-primary" />
+											<span className="ml-2 text-muted-foreground">
+												Cargando municiones desde Tarkov.dev...
+											</span>
+										</div>
+									)}
+
+									{error && (
+										<div className="flex items-center justify-center py-8 text-destructive">
+											<AlertCircle className="h-6 w-6" />
+											<span className="ml-2">
+												Error al cargar municiones: {error.message}
+											</span>
+										</div>
+									)}
+
+									{ammoList && ammoList.length > 0 && (
+										<div className="space-y-4">
+											{ammoList.map((ammo) => (
+												<AmmoItem key={ammo.id} ammo={ammo} />
+											))}
+										</div>
+									)}
+
+									{ammoList && ammoList.length === 0 && !isLoading && (
+										<div className="py-8 text-center text-muted-foreground">
+											No se encontraron municiones
+										</div>
+									)}
+								</CardContent>
+							</Card>
+						</section>
 					</div>
 
-					<Card className="transition-all duration-300 hover:shadow-lg hover:shadow-primary/10">
-						<CardHeader className="border-border border-b">
-							<CardTitle className="font-[family-name:var(--font-heading)]">
-								Top 10 Municiones
-							</CardTitle>
-						</CardHeader>
-						<CardContent className="pt-6">
-							{isLoading && (
-								<div className="flex items-center justify-center py-8">
-									<Loader2 className="h-8 w-8 animate-spin text-primary" />
-									<span className="ml-2 text-muted-foreground">
-										Cargando municiones desde Tarkov.dev...
-									</span>
-								</div>
-							)}
-
-							{error && (
-								<div className="flex items-center justify-center py-8 text-destructive">
-									<AlertCircle className="h-6 w-6" />
-									<span className="ml-2">
-										Error al cargar municiones: {error.message}
-									</span>
-								</div>
-							)}
-
-							{ammoList && ammoList.length > 0 && (
-								<div className="space-y-4">
-									{ammoList.map((ammo) => (
-										<AmmoItem key={ammo.id} ammo={ammo} />
-									))}
-								</div>
-							)}
-
-							{ammoList && ammoList.length === 0 && !isLoading && (
-								<div className="py-8 text-center text-muted-foreground">
-									No se encontraron municiones
-								</div>
-							)}
-						</CardContent>
-					</Card>
-				</section>
+					{/* Sidebar */}
+					<div className="lg:col-span-1">
+						<div className="mt-14">
+							<BossSpawnList />
+						</div>
+					</div>
+				</div>
 			</main>
 		</div>
 	);

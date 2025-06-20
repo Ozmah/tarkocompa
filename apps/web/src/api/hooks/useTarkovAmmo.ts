@@ -1,5 +1,5 @@
 import { type UseQueryOptions, useQuery } from "@tanstack/react-query";
-import { rateLimiter, tarkovApiClient } from "../client";
+import { tarkovApiClient } from "../client";
 import { GET_AMMO_ITEMS, type GetAmmoItemsVariables } from "../queries";
 import type { AmmoQueryResponse, TarkovAmmo, TarkovApiError } from "../types";
 
@@ -24,47 +24,12 @@ export function useTarkovAmmo(
 	return useQuery<TarkovAmmo[], TarkovApiError>({
 		queryKey: tarkovAmmoKeys.list(variables),
 		queryFn: async (): Promise<TarkovAmmo[]> => {
-			// Check rate limit before making request
-			if (!rateLimiter.canMakeRequest()) {
-				const error: TarkovApiError = {
-					type: "rate_limit",
-					message:
-						"Rate limit exceeded. Please wait before making another request.",
-				};
-				throw error;
-			}
+			const response = await tarkovApiClient<AmmoQueryResponse>(
+				GET_AMMO_ITEMS,
+				variables,
+			);
 
-			try {
-				const response = await tarkovApiClient.request<AmmoQueryResponse>(
-					GET_AMMO_ITEMS,
-					variables,
-				);
-
-				return response.items || [];
-			} catch (error) {
-				// Enhanced error handling
-				if (error instanceof Error) {
-					if (error.message.includes("fetch")) {
-						const apiError: TarkovApiError = {
-							type: "network",
-							message: "Network error: Unable to connect to Tarkov API",
-						};
-						throw apiError;
-					}
-
-					const apiError: TarkovApiError = {
-						type: "graphql",
-						message: error.message,
-					};
-					throw apiError;
-				}
-
-				const unknownError: TarkovApiError = {
-					type: "unknown",
-					message: "An unexpected error occurred",
-				};
-				throw unknownError;
-			}
+			return response.items || [];
 		},
 		// Default cache configuration following project guidelines
 		staleTime: 5 * 60 * 1000, // 5 minutes - ammo data changes frequently with prices

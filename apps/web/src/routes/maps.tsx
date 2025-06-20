@@ -30,8 +30,8 @@ function MapsComponent() {
 						Mapas de Tarkov
 					</h1>
 					<p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
-						Información detallada de todos los mapas, incluyendo spawn rates de
-						jefes, extracciones y datos tácticos.
+						Información de todos los mapas, incluyendo spawn rates y
+						extracciones
 					</p>
 				</div>
 			</section>

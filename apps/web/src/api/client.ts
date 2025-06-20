@@ -1,12 +1,58 @@
+import type { TarkovApiError } from "@/api/types";
 import { RATE_LIMIT_CONFIG, TARKOV_API_ENDPOINT } from "@/lib/constants";
 import { GraphQLClient } from "graphql-request";
 
 // Create GraphQL client with default configuration
-export const tarkovApiClient = new GraphQLClient(TARKOV_API_ENDPOINT, {
+const graphqlClient = new GraphQLClient(TARKOV_API_ENDPOINT, {
 	headers: {
 		"Content-Type": "application/json",
 	},
 });
+
+// API client function that handles rate limiting and error handling
+export async function tarkovApiClient<T>(
+	query: string,
+	variables?: Record<string, unknown>,
+): Promise<T> {
+	// Check rate limit
+	if (!rateLimiter.canMakeRequest()) {
+		const error: TarkovApiError = {
+			type: "rate_limit",
+			message: "Rate limit exceeded. Please try again later.",
+		};
+		throw error;
+	}
+
+	try {
+		const response = await graphqlClient.request<T>(query, variables);
+		return response;
+	} catch (error) {
+		// Handle different types of errors
+		if (error instanceof Error) {
+			if (error.message.includes("fetch")) {
+				const tarkovError: TarkovApiError = {
+					type: "network",
+					message: "Network error. Please check your connection.",
+				};
+				throw tarkovError;
+			}
+
+			// GraphQL errors
+			const tarkovError: TarkovApiError = {
+				type: "graphql",
+				message: error.message,
+			};
+			throw tarkovError;
+		}
+
+		// Unknown error
+		const tarkovError: TarkovApiError = {
+			type: "unknown",
+			message: "An unknown error occurred",
+		};
+		throw tarkovError;
+	}
+}
 
 // Rate limiting class following project guidelines
 class TarkovApiRateLimiter {

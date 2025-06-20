@@ -58,6 +58,29 @@ export const ITEM_PRICE_FRAGMENT = `
   ${VENDOR_FRAGMENT}
 `;
 
+export const BOSS_INFO_FRAGMENT = `
+  fragment BossInfo on MobInfo {
+    id
+    name
+    normalizedName
+    imagePortraitLink
+    imagePosterLink
+  }
+`;
+
+export const BOSS_SPAWNS_FRAGMENT = `
+  boss {
+    ...BossInfo
+  }
+  spawnChance
+  spawnLocations {
+    name
+    chance
+  }
+  spawnTime
+  spawnTimeRandom
+`;
+
 // Complete ammo fragment combining all relevant data
 export const COMPLETE_AMMO_FRAGMENT = `
   fragment CompleteAmmoInfo on Item {

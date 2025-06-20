@@ -13,6 +13,7 @@ import { ThemeSwitcher } from "./theme-switcher";
 import { Button } from "./ui/button";
 import {
 	Sheet,
+	SheetClose,
 	SheetContent,
 	SheetHeader,
 	SheetTitle,
@@ -65,14 +66,16 @@ export default function Header() {
 								</SheetHeader>
 								<nav className="mt-8 flex flex-col gap-4">
 									{links.map(({ to, label, icon: Icon }) => (
-										<Link
-											key={to}
-											to={to}
-											className="flex items-center gap-3 rounded-md px-3 py-3 font-medium text-foreground transition-all duration-200 hover:bg-muted [&.active]:bg-muted [&.active]:text-primary"
-										>
-											<Icon className="h-5 w-5" />
-											{label}
-										</Link>
+										<SheetClose key={to} asChild>
+											<Link
+												key={to}
+												to={to}
+												className="flex items-center gap-3 rounded-md px-3 py-3 font-medium text-foreground transition-all duration-200 hover:bg-muted [&.active]:bg-muted [&.active]:text-primary"
+											>
+												<Icon className="h-5 w-5" />
+												{label}
+											</Link>
+										</SheetClose>
 									))}
 								</nav>
 							</SheetContent>
