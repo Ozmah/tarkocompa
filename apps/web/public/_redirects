@@ -1,0 +1,25 @@
+# Protege archivos sensibles
+/.env*           /404.html  404
+/config/*        /404.html  404
+/.git/*          /404.html  404
+
+# Assets estáticos - sirve archivos reales
+/assets/*        /assets/:splat  200
+/static/*        /static/:splat  200
+/images/*        /images/:splat  200
+/favicon.ico     /favicon.ico    200
+/robots.txt      /robots.txt     200
+
+# Rutas específicas de tu SPA
+/maps            /index.html     200
+/dashboard/*     /index.html     200
+
+# Catch-all para todas las demás rutas del SPA
+/*               /index.html     200
+
+# Headers de seguridad
+/*
+  X-Frame-Options: DENY
+  X-XSS-Protection: 1; mode=block
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
